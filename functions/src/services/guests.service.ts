@@ -99,9 +99,12 @@ export class GuestsService {
       this.getGuest(eventId, guestId),
       EventsService.getEventById(eventId),
     ]);
-
+    try {
     await EmailService.sendRSVPConfirmation(guest.email, guest.name, event.title, status);
-
+    } catch (error){
+      logger.warn("RSVP email failed but RSVP stored successfully,{error}")
+    }
     return guest;
   }
 }
+
