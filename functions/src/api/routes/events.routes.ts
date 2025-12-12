@@ -7,6 +7,7 @@ import {
   updateEventSchema,
   eventQuerySchema,
   eventIdSchema,
+  eventSettingsSchema,
 } from "../validators/events.validator";
 
 const router = Router();
@@ -31,6 +32,15 @@ router.get(
   authenticate,
   validateQuery(eventQuerySchema),
   eventsController.getUserEvents
+);
+
+/**
+ * GET /api/v1/events/types
+ * Get list of supported event types
+ */
+router.get(
+  "/types",
+  eventsController.getEventTypes
 );
 
 /**
@@ -64,6 +74,28 @@ router.delete(
   authenticate,
   validateParams(eventIdSchema),
   eventsController.deleteEvent
+);
+
+/**
+ * GET /api/v1/events/:eventId/settings
+ * Get event settings
+ */
+router.get(
+  "/:eventId/settings",
+  validateParams(eventIdSchema),
+  eventsController.getEventSettings
+);
+
+/**
+ * PUT /api/v1/events/:eventId/settings
+ * Update event settings (requires authentication and ownership)
+ */
+router.put(
+  "/:eventId/settings",
+  authenticate,
+  validateParams(eventIdSchema),
+  validate(eventSettingsSchema),
+  eventsController.updateEventSettings
 );
 
 /**

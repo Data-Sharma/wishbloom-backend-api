@@ -182,4 +182,44 @@ export class EventsService {
       throw error;
     }
   }
+
+  /**
+   * Get list of supported event types
+   */
+  static getEventTypes(): string[] {
+    return [
+      "birthday",
+      "wedding",
+      "anniversary",
+      "graduation",
+      "baby_shower",
+      "retirement",
+      "other",
+    ];
+  }
+
+  /**
+   * Get event settings (subset of event fields)
+   */
+  static async getEventSettings(eventId: string): Promise<any> {
+    const event = await this.getEventById(eventId);
+    return {
+      eventDate: event.eventDate,
+      location: event.location,
+      budget: event.budget,
+      guestCount: event.guestCount,
+      status: event.status,
+    };
+  }
+
+  /**
+   * Update event settings and return updated settings
+   */
+  static async updateEventSettings(
+    eventId: string,
+    settings: Partial<UpdateEventData>
+  ): Promise<any> {
+    await this.updateEvent(eventId, settings);
+    return this.getEventSettings(eventId);
+  }
 }

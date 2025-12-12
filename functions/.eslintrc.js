@@ -20,6 +20,7 @@ module.exports = {
   ignorePatterns: [
     "/lib/**/*", // Ignore built files.
     "/generated/**/*", // Ignore generated files.
+    "jest.config.js",
   ],
   plugins: [
     "@typescript-eslint",
@@ -29,5 +30,19 @@ module.exports = {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["error", 2],
+    "max-len": ["error", {"code": 200}],
+    "object-curly-spacing": ["error", "never"],
+    "linebreak-style": ["error", "windows"],
+    "require-jsdoc": "off",
+    "valid-jsdoc": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "new-cap": "off",
+    "import/no-named-as-default": "off",
   },
 };

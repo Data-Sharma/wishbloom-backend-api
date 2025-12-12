@@ -25,6 +25,39 @@ export const updateGuestSchema = Joi.object({
   metadata: Joi.object().optional(),
 }).min(1);
 
+export const bulkGuestsSchema = Joi.object({
+  guests: Joi.array().items(
+    Joi.object({
+      name: Joi.string().trim().min(2).max(100).required(),
+      email: Joi.string().email().required(),
+      phone: Joi.string().trim().optional(),
+      role: Joi.string().trim().valid("adult", "child", "vip").default("adult"),
+      notes: Joi.string().trim().max(500).optional(),
+      rsvpStatus: Joi.string()
+        .valid(...rsvpStatuses)
+        .default(RSVP_STATUS.PENDING),
+      metadata: Joi.object().optional(),
+    })
+  ).min(1).required(),
+}).required();
+
+export const importContactsSchema = Joi.object({
+  eventId: Joi.string().required(),
+  guests: Joi.array().items(
+    Joi.object({
+      name: Joi.string().trim().min(2).max(100).required(),
+      email: Joi.string().email().required(),
+      phone: Joi.string().trim().optional(),
+      role: Joi.string().trim().valid("adult", "child", "vip").default("adult"),
+      notes: Joi.string().trim().max(500).optional(),
+      rsvpStatus: Joi.string()
+        .valid(...rsvpStatuses)
+        .default(RSVP_STATUS.PENDING),
+      metadata: Joi.object().optional(),
+    })
+  ).min(1).required(),
+}).required();
+
 export const rsvpUpdateSchema = Joi.object({
   rsvpStatus: Joi.string()
     .valid(...rsvpStatuses)

@@ -9,6 +9,7 @@ const isValidSendgridKey = (key?: string | null): key is string =>
 
 if (isValidSendgridKey(config.sendgridApiKey)) {
   sgMail.setApiKey(config.sendgridApiKey);
+  logger.info("SendGrid initialized successfully");
 } else {
   logger.warn("SendGrid API key missing or invalid (must start with \"SG.\"). Email sending disabled.");
 }
@@ -28,6 +29,15 @@ export interface InvitationEmailData {
   eventLocation: string;
   hostName: string;
   rsvpLink: string;
+
+  // optional: image for invitation
+  imageUrl?: string;
+
+  // optional tracking pixel URL to embed (1x1 gif)
+  trackingPixelUrl?: string;
+
+  // optional full HTML override (if provided, will be used instead of built HTML)
+  htmlOverride?: string;
 }
 
 /**
@@ -70,10 +80,14 @@ export class EmailService {
 
   /**
    * Send event invitation email
+   *
+   * Note: htmlOverride, trackingPixelUrl are optional and used by InvitationsService for tracking.
    */
   static async sendInvitation(data: InvitationEmailData): Promise<void> {
     try {
-      const html = `
+      let html = data.htmlOverride;
+      if (!html) {
+        html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -84,6 +98,7 @@ export class EmailService {
     .content { padding: 30px; background: #f9f9f9; }
     .button { display: inline-block; padding: 12px 30px; background: #32b8c6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
     .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    img.invitation-image { max-width:100%; height:auto; display:block; margin: 12px 0; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -97,6 +112,7 @@ export class EmailService {
       <h2>${data.eventTitle}</h2>
       <p><strong>When:</strong> ${data.eventDate}</p>
       <p><strong>Where:</strong> ${data.eventLocation}</p>
+      ${data.imageUrl ? `<img class="invitation-image" src="${data.imageUrl}" alt="Invitation image" />` : ""}
       <p>We'd love to have you join us for this special occasion!</p>
       <a href="${data.rsvpLink}" class="button">RSVP Now</a>
       <p>Looking forward to celebrating with you!</p>
@@ -105,9 +121,16 @@ export class EmailService {
       <p>This invitation was sent via WishBloom</p>
     </div>
   </div>
+  ${data.trackingPixelUrl ? `<img src="${data.trackingPixelUrl}" width="1" height="1" style="display:none" alt="" />` : ""}
 </body>
 </html>
-      `;
+        `;
+      } else {
+        // if htmlOverride provided, append tracking pixel if present
+        if (data.trackingPixelUrl) {
+          html += `\n<img src="${data.trackingPixelUrl}" width="1" height="1" style="display:none" alt="" />`;
+        }
+      }
 
       await this.sendEmail({
         to: data.guestEmail,
@@ -120,9 +143,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send RSVP confirmation email
-   */
+  // ... remaining methods (sendRSVPConfirmation, sendEventReminder, sendGiftConfirmation) unchanged ...
   static async sendRSVPConfirmation(
     guestEmail: string,
     guestName: string,
@@ -157,9 +178,6 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send event reminder email
-   */
   static async sendEventReminder(
     guestEmail: string,
     guestName: string,
@@ -198,9 +216,6 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send gift purchase confirmation
-   */
   static async sendGiftConfirmation(
     guestEmail: string,
     guestName: string,

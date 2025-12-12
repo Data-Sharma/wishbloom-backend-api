@@ -33,12 +33,34 @@ export const listGuests = async (req: Request, res: Response, next: NextFunction
   }
 };
 
+export const getGuest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const {eventId, guestId} = req.params;
+    await ensureEventOwnership(req, eventId);
+    const guest = await GuestsService.getGuest(eventId, guestId);
+    sendSuccess(res, guest);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const addGuest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {eventId} = req.params;
     await ensureEventOwnership(req, eventId);
     const guest = await GuestsService.addGuest(eventId, req.body);
     sendCreated(res, guest, "Guest added successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addGuestsBulk = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const {eventId} = req.params;
+    await ensureEventOwnership(req, eventId);
+    const guests = await GuestsService.addGuestsBulk(eventId, req.body.guests || []);
+    sendCreated(res, guests, "Guests added successfully");
   } catch (error) {
     next(error);
   }

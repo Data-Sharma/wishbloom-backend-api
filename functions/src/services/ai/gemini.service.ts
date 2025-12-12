@@ -8,7 +8,12 @@ import {HTTP_STATUS} from "../../config/constants";
  * Initialize Gemini AI
  */
 const genAI = new GoogleGenerativeAI(config.geminiApiKey || "");
-const model = genAI.getGenerativeModel({model: "gemini-pro"});
+const model = genAI.getGenerativeModel({model: "gemini-1.5-flash"});
+
+// Validate API key at startup
+if (!config.geminiApiKey) {
+  logger.warn("Gemini API key not configured - AI features will not work");
+}
 
 export interface EventThemeRequest {
   eventType: string;
@@ -34,10 +39,20 @@ export interface VendorSuggestionRequest {
  * Gemini AI Service - AI-powered features
  */
 export class GeminiService {
+  // Minimal image generation placeholder. InvitationsService wraps this in try/catch.
+  static async generateImage(_prompt: string): Promise<{url?: string; imageUrl?: string} | null> {
+    logger.warn("GeminiService.generateImage is not implemented; returning null image");
+    return null;
+  }
+
   /**
    * Generate event theme suggestions
    */
   static async generateEventTheme(request: EventThemeRequest): Promise<any> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
     try {
       const prompt = `
 Generate a creative event theme for a ${request.eventType} event.
@@ -77,6 +92,10 @@ Format the response as JSON with these exact keys: themeName, colorPalette (arra
    * Generate invitation caption
    */
   static async generateInvitationCaption(request: InvitationCaptionRequest): Promise<string> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
     try {
       const tone = request.tone || "casual";
       const prompt = `
@@ -109,6 +128,10 @@ Return only the caption text, no additional formatting.
    * Suggest vendors for event
    */
   static async suggestVendors(request: VendorSuggestionRequest): Promise<any> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
     try {
       const prompt = `
 Suggest vendors for a ${request.eventType} event in ${request.location}.
@@ -151,6 +174,10 @@ Format as JSON array with objects containing: category, tips (array), costRange,
     eventType: string,
     description: string
   ): Promise<string> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
     try {
       const prompt = `
 Write a heartfelt caption for a photo memory from a ${eventType} event.
@@ -184,6 +211,10 @@ Return only the caption text.
     eventDate: string,
     guestCount = 0
   ): Promise<any> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
     try {
       const prompt = `
 Create a comprehensive planning checklist for a ${eventType} event.
@@ -222,6 +253,34 @@ Example: {"3_months_before": ["Task 1", "Task 2"], ...}
     } catch (error) {
       logger.error("Error generating event checklist", error);
       throw new AppError("Failed to generate checklist", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Generic helper: generate JSON (object or array) from a prompt
+   * Used by higher-level services such as gift recommendations.
+   */
+  static async generateJsonFromPrompt(prompt: string): Promise<any> {
+    if (!config.geminiApiKey) {
+      throw new AppError("Gemini API key not configured", HTTP_STATUS.SERVICE_UNAVAILABLE);
+    }
+
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      // Try to extract either an object {...} or array [...]
+      const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new AppError("Failed to parse AI JSON response", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      return parsed;
+    } catch (error) {
+      logger.error("Error generating JSON from prompt", error);
+      throw new AppError("Failed to generate AI JSON response", HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 }

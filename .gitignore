@@ -68,3 +68,5 @@ functions/lib/
 
 # dataconnect generated files
 .dataconnect
+auth_token.txt
+

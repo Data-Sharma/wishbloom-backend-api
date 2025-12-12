@@ -1,11 +1,12 @@
 import {storage} from "../../config/firebase.config";
 import {logger} from "../../utils/logger.util";
 
-const bucket = storage.bucket();
-
 export class StorageService {
+  private static getBucket() {
+    return storage.bucket();
+  }
   static getBucketName(): string {
-    return bucket.name;
+    return this.getBucket().name;
   }
 
   static async uploadBuffer(
@@ -13,7 +14,7 @@ export class StorageService {
     buffer: Buffer,
     contentType?: string
   ): Promise<string> {
-    const file = bucket.file(destination);
+    const file = this.getBucket().file(destination);
     await file.save(buffer, {
       contentType,
       resumable: false,
@@ -24,7 +25,7 @@ export class StorageService {
   }
 
   static async uploadFileFromPath(source: string, destination: string, contentType?: string): Promise<string> {
-    const [file] = await bucket.upload(source, {
+    const [file] = await this.getBucket().upload(source, {
       destination,
       metadata: {
         contentType,
@@ -36,12 +37,12 @@ export class StorageService {
   }
 
   static async deleteFile(path: string): Promise<void> {
-    await bucket.file(path).delete({ignoreNotFound: true});
+    await this.getBucket().file(path).delete({ignoreNotFound: true});
     logger.info("File deleted from storage", {path});
   }
 
   static async generateSignedUrl(path: string, expiresInSeconds = 3600): Promise<string> {
-    const file = bucket.file(path);
+    const file = this.getBucket().file(path);
     const [url] = await file.getSignedUrl({
       action: "read",
       expires: Date.now() + expiresInSeconds * 1000,

@@ -1,39 +1,21 @@
 import {Router} from "express";
-import * as paymentsController from "../controllers/payments.controller";
+import * as paymentController from "../controllers/payment.controller";
 import {authenticate} from "../../middleware/auth.middleware";
-import {validate, validateParams} from "../../middleware/validation.middleware";
+import {validate} from "../../middleware/validation.middleware";
 import {createPaymentIntentSchema, refundPaymentSchema} from "../validators/payments.validator";
-import {paymentIntentParamsSchema} from "../validators/common.validator";
 
 const router = Router();
 
-router.post(
-  "/intents",
-  authenticate,
-  validate(createPaymentIntentSchema),
-  paymentsController.createPaymentIntent
-);
+// Create payment (authenticated optional, but we'll allow authenticated)
+router.post("/initiate", authenticate, validate(createPaymentIntentSchema), paymentController.initiate);
 
-router.post(
-  "/intents/:paymentIntentId/confirm",
-  authenticate,
-  validateParams(paymentIntentParamsSchema),
-  paymentsController.confirmPaymentIntent
-);
+// Verify payment (can be called by client after webhook or directly)
+router.post("/verify", validate((() => ({body: {paymentIntentId: {required: true}}})) as any), paymentController.verify);
 
-router.post(
-  "/intents/:paymentIntentId/refund",
-  authenticate,
-  validateParams(paymentIntentParamsSchema),
-  validate(refundPaymentSchema),
-  paymentsController.refundPayment
-);
+// List transactions (authenticated)
+router.get("/transactions", authenticate, paymentController.listTransactions);
 
-router.get(
-  "/intents/:paymentIntentId",
-  authenticate,
-  validateParams(paymentIntentParamsSchema),
-  paymentsController.getPaymentIntent
-);
+// Refund (authenticated; authorize admin or host if you want - currently basic auth)
+router.post("/refund", authenticate, validate(refundPaymentSchema), paymentController.refund);
 
 export default router;

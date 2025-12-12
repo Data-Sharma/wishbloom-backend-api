@@ -2,30 +2,27 @@ import {Router} from "express";
 import * as vendorsController from "../controllers/vendors.controller";
 import {authenticate} from "../../middleware/auth.middleware";
 import {validate, validateParams, validateQuery} from "../../middleware/validation.middleware";
-import {createVendorSchema, updateVendorSchema} from "../validators/vendors.validator";
-import {paginationQuerySchema, vendorIdParamsSchema} from "../validators/common.validator";
+import {
+  vendorFilterQuerySchema,
+  vendorIdParamSchema,
+  requestQuoteSchema,
+  bookVendorSchema,
+  reviewVendorSchema,
+} from "../validators/vendors.validator";
 
 const router = Router();
 
-router.post("/", authenticate, validate(createVendorSchema), vendorsController.createVendor);
+router.get("/", validateQuery(vendorFilterQuerySchema), vendorsController.getVendors);
+router.get("/:vendorId", validateParams(vendorIdParamSchema), vendorsController.getVendorById);
 
-router.get("/", authenticate, validateQuery(paginationQuerySchema), vendorsController.getVendors);
+router.post("/:vendorId/quote", authenticate, validateParams(vendorIdParamSchema), validate(requestQuoteSchema), vendorsController.requestQuote);
 
-router.get("/:vendorId", authenticate, validateParams(vendorIdParamsSchema), vendorsController.getVendorById);
+router.get("/quotes/user", authenticate, vendorsController.getUserQuotes);
 
-router.put(
-  "/:vendorId",
-  authenticate,
-  validateParams(vendorIdParamsSchema),
-  validate(updateVendorSchema),
-  vendorsController.updateVendor
-);
+router.post("/:vendorId/book", authenticate, validateParams(vendorIdParamSchema), validate(bookVendorSchema), vendorsController.bookVendor);
 
-router.delete(
-  "/:vendorId",
-  authenticate,
-  validateParams(vendorIdParamsSchema),
-  vendorsController.deleteVendor
-);
+router.post("/:vendorId/review", authenticate, validateParams(vendorIdParamSchema), validate(reviewVendorSchema), vendorsController.reviewVendor);
+
+router.get("/categories/list", vendorsController.getVendorCategories);
 
 export default router;

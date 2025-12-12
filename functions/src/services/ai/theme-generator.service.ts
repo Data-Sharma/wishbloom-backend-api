@@ -8,6 +8,14 @@ export interface ThemeRequest {
 }
 
 export class ThemeGeneratorService {
+  static async generateDesign(styleOptions: Record<string, any>): Promise<any> {
+    // Minimal implementation: wrap provided style options into a basic theme object.
+    return {
+      theme: "custom",
+      styleOptions,
+    };
+  }
+
   static async generateThemeSuggestions(payload: ThemeRequest): Promise<any> {
     return GeminiService.generateEventTheme(payload);
   }

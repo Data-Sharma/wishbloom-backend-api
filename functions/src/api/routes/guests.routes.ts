@@ -7,6 +7,7 @@ import {
   updateGuestSchema,
   guestQuerySchema,
   rsvpUpdateSchema,
+  bulkGuestsSchema,
 } from "../validators/guests.validator";
 import {eventParamsSchema, guestParamsSchema} from "../validators/common.validator";
 
@@ -28,12 +29,27 @@ router.post(
   guestsController.addGuest
 );
 
+router.post(
+  "/:eventId/guests/bulk",
+  authenticate,
+  validateParams(eventParamsSchema),
+  validate(bulkGuestsSchema),
+  guestsController.addGuestsBulk
+);
+
 router.put(
   "/:eventId/guests/:guestId",
   authenticate,
   validateParams(guestParamsSchema),
   validate(updateGuestSchema),
   guestsController.updateGuest
+);
+
+router.get(
+  "/:eventId/guests/:guestId",
+  authenticate,
+  validateParams(guestParamsSchema),
+  guestsController.getGuest
 );
 
 router.delete(

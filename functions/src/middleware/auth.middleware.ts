@@ -12,6 +12,8 @@ declare global {
         email?: string;
         role?: string;
         emailVerified?: boolean;
+        phoneNumber?: string;
+        phoneNumberVerified?: boolean;
       };
     }
   }
@@ -41,8 +43,10 @@ export const authenticate = async (
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
-      role: decodedToken.role,
+      role: (decodedToken as any).role || (decodedToken as any).roles || undefined,
       emailVerified: decodedToken.email_verified,
+      phoneNumber: (decodedToken as any).phone_number || undefined,
+      phoneNumberVerified: !!(decodedToken as any).phone_number,
     };
 
     next();
@@ -55,16 +59,13 @@ export const authenticate = async (
  * Check if user has required role
  */
 export const authorize = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       throw new AppError("User not authenticated", HTTP_STATUS.UNAUTHORIZED);
     }
 
     if (!req.user.role || !roles.includes(req.user.role)) {
-      throw new AppError(
-        "Insufficient permissions",
-        HTTP_STATUS.FORBIDDEN
-      );
+      throw new AppError("Insufficient permissions", HTTP_STATUS.FORBIDDEN);
     }
 
     next();
@@ -76,7 +77,7 @@ export const authorize = (...roles: string[]) => {
  */
 export const optionalAuth = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -99,6 +100,42 @@ export const optionalAuth = async (
     // Continue without auth
     next();
   }
+};
+
+/**
+ * Require phone number verification
+ */
+export const requirePhoneVerification = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user?.phoneNumberVerified) {
+    throw new AppError(
+      "Phone number verification required",
+      HTTP_STATUS.FORBIDDEN
+    );
+  }
+
+  next();
+};
+
+/**
+ * Require either email OR phone verification
+ */
+export const requireAnyVerification = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user?.emailVerified && !req.user?.phoneNumberVerified) {
+    throw new AppError(
+      "Email or phone verification required",
+      HTTP_STATUS.FORBIDDEN
+    );
+  }
+
+  next();
 };
 
 /**

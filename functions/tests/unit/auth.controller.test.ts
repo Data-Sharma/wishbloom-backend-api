@@ -1,12 +1,12 @@
-import { signUp, login } from '../../src/api/controllers/auth.controller';
-import { HTTP_STATUS } from '../../src/config/constants';
-import { AppError } from '../../src/utils/error.util';
+import {signUp, login} from "../../src/api/controllers/auth.controller";
+import {HTTP_STATUS} from "../../src/config/constants";
+import {AppError} from "../../src/utils/error.util";
 
 const mockSet = jest.fn();
-const mockDoc = jest.fn((docId?: string) => ({ set: mockSet }));
-const mockCollection = jest.fn((collectionName?: string) => ({ doc: mockDoc }));
+const mockDoc = jest.fn((docId?: string) => ({set: mockSet}));
+const mockCollection = jest.fn((collectionName?: string) => ({doc: mockDoc}));
 
-jest.mock('../../src/config/firebase.config', () => ({
+jest.mock("../../src/config/firebase.config", () => ({
   auth: {
     createUser: jest.fn(),
     setCustomUserClaims: jest.fn(),
@@ -20,13 +20,13 @@ jest.mock('../../src/config/firebase.config', () => ({
   },
 }));
 
-jest.mock('../../src/config/env.config', () => ({
+jest.mock("../../src/config/env.config", () => ({
   config: {
-    identityToolkitApiKey: 'test-key',
+    identityToolkitApiKey: "test-key",
   },
 }));
 
-const { auth } = jest.requireMock('../../src/config/firebase.config') as {
+const {auth} = jest.requireMock("../../src/config/firebase.config") as {
   auth: {
     createUser: jest.Mock;
     setCustomUserClaims: jest.Mock;
@@ -43,30 +43,30 @@ const createResponse = () => {
   return res;
 };
 
-describe('Auth Controller', () => {
+describe("Auth Controller", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSet.mockReset();
     (global.fetch as jest.Mock).mockReset();
   });
 
-  describe('signUp', () => {
-    it('creates a user and returns basic profile', async () => {
+  describe("signUp", () => {
+    it("creates a user and returns basic profile", async () => {
       const req: any = {
         body: {
-          email: 'test@example.com',
-          password: 'Password123',
-          displayName: 'Test User',
-          role: 'host',
+          email: "test@example.com",
+          password: "Password123",
+          displayName: "Test User",
+          role: "host",
         },
       };
       const res = createResponse();
       const next = jest.fn();
 
       auth.createUser.mockResolvedValue({
-        uid: 'uid123',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "uid123",
+        email: "test@example.com",
+        displayName: "Test User",
       });
       auth.setCustomUserClaims.mockResolvedValue(undefined);
 
@@ -74,13 +74,13 @@ describe('Auth Controller', () => {
 
       expect(auth.createUser).toHaveBeenCalledWith(
         expect.objectContaining({
-          email: 'test@example.com',
-          password: 'Password123',
-          displayName: 'Test User',
+          email: "test@example.com",
+          password: "Password123",
+          displayName: "Test User",
         })
       );
-      expect(mockCollection).toHaveBeenCalledWith('users');
-      expect(mockDoc).toHaveBeenCalledWith('uid123');
+      expect(mockCollection).toHaveBeenCalledWith("users");
+      expect(mockDoc).toHaveBeenCalledWith("uid123");
       expect(mockSet).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.CREATED);
       expect(res.json).toHaveBeenCalledWith(
@@ -88,8 +88,8 @@ describe('Auth Controller', () => {
           success: true,
           data: expect.objectContaining({
             user: expect.objectContaining({
-              uid: 'uid123',
-              email: 'test@example.com',
+              uid: "uid123",
+              email: "test@example.com",
             }),
           }),
         })
@@ -98,22 +98,22 @@ describe('Auth Controller', () => {
     });
   });
 
-  describe('login', () => {
-    it('calls next with AppError for invalid credentials', async () => {
+  describe("login", () => {
+    it("calls next with AppError for invalid credentials", async () => {
       const req: any = {
         body: {
-          email: 'test@example.com',
-          password: 'wrong-password',
+          email: "test@example.com",
+          password: "wrong-password",
         },
       };
       const res = createResponse();
       const next = jest.fn();
 
-      process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:9099';
+      process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
 
       auth.getUserByEmail.mockResolvedValue({
-        uid: 'uid123',
-        email: 'test@example.com',
+        uid: "uid123",
+        email: "test@example.com",
         customClaims: {},
       });
 
@@ -121,7 +121,7 @@ describe('Auth Controller', () => {
         ok: false,
         json: async () => ({
           error: {
-            message: 'INVALID_PASSWORD',
+            message: "INVALID_PASSWORD",
           },
         }),
       });
@@ -130,7 +130,7 @@ describe('Auth Controller', () => {
 
       expect(next).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Invalid email or password',
+          message: "Invalid email or password",
           statusCode: HTTP_STATUS.UNAUTHORIZED,
         }) as AppError
       );

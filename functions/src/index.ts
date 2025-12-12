@@ -13,6 +13,7 @@ import {errorHandler, notFoundHandler} from "./middleware/error.middleware";
 import {apiLimiter} from "./middleware/rateLimit.middleware";
 
 // Import routes
+import adminRoutes from "./api/routes/admin.routes";
 import eventsRoutes from "./api/routes/events.routes";
 import aiRoutes from "./api/routes/ai.routes";
 import guestsRoutes from "./api/routes/guests.routes";
@@ -22,6 +23,11 @@ import invitationsRoutes from "./api/routes/invitations.routes";
 import memoriesRoutes from "./api/routes/memories.routes";
 import paymentsRoutes from "./api/routes/payments.routes";
 import authRoutes from "./api/routes/auth.routes";
+import notificationsRoutes from "./api/routes/notifications.routes";
+import wishlistRoutes from "./api/routes/wishlist.routes";
+import usersRoutes from "./api/routes/users.routes";
+import contactsRoutes from "./api/routes/contacts.routes";
+import guestWishlistRoutes from "./api/routes/guestWishlist.routes";
 
 // Import triggers
 import * as firestoreTriggers from "./triggers/firestore.triggers";
@@ -91,6 +97,12 @@ app.use("/api/v1/vendors", vendorsRoutes);
 app.use("/api/v1/payments", paymentsRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/events", wishlistRoutes);
+app.use("/api", contactsRoutes);
+app.use("/api", guestWishlistRoutes);
 
 // 404 handler (must be after all routes)
 app.use(notFoundHandler);

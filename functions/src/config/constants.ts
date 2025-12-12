@@ -5,10 +5,22 @@ export const COLLECTIONS = {
   GUESTS: "guests",
   GIFTS: "gifts",
   VENDORS: "vendors",
+  VENDOR_QUOTES: "vendorQuotes",
+  VENDOR_BOOKINGS: "vendorBookings",
+  VENDOR_REVIEWS: "vendorReviews",
   INVITATIONS: "invitations",
   MEMORIES: "memories",
   PAYMENTS: "payments",
   NOTIFICATIONS: "notifications",
+  NOTIFICATION_PREFERENCES: "notificationPreferences",
+  MEDIA: "media",
+  TRANSACTIONS: "transactions",
+  WISHLISTS: "wishlists",
+  WISHLIST_ITEMS: "wishlistItems",
+  WISHLIST_CONTRIBUTIONS: "wishlistContributions",
+  INVITATION_TEMPLATES: "invitation_templates",
+
+
 };
 
 // Event Types
@@ -76,6 +88,7 @@ export const HTTP_STATUS = {
   CONFLICT: 409,
   UNPROCESSABLE_ENTITY: 422,
   INTERNAL_SERVER_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503,
 };
 
 export const ERROR_CODES = {
@@ -95,3 +108,10 @@ export const PAYMENT_STATUS = {
   FAILED: "failed",
   REFUNDED: "refunded",
 };
+
+export const REDIRECT_WHITELIST = [
+  "https://wishbloom.com",
+  "https://www.wishbloom.com",
+  "http://localhost:5173", // Dev frontend
+  "http://localhost:3000", // Alternate dev
+];

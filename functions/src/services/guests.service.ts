@@ -54,6 +54,14 @@ export class GuestsService {
     return guest;
   }
 
+  static async addGuestsBulk(eventId: string, guestsData: GuestData[]): Promise<any[]> {
+    const results = await Promise.all(
+      (guestsData || []).map((data) => this.addGuest(eventId, data))
+    );
+    logger.info("Bulk guests added", {eventId, count: results.length});
+    return results;
+  }
+
   static async getGuest(eventId: string, guestId: string): Promise<any> {
     return FirestoreService.getSubcollectionDocument(
       COLLECTIONS.EVENTS,
@@ -100,9 +108,9 @@ export class GuestsService {
       EventsService.getEventById(eventId),
     ]);
     try {
-    await EmailService.sendRSVPConfirmation(guest.email, guest.name, event.title, status);
-    } catch (error){
-      logger.warn("RSVP email failed but RSVP stored successfully,{error}")
+      await EmailService.sendRSVPConfirmation(guest.email, guest.name, event.title, status);
+    } catch (error) {
+      logger.warn("RSVP email failed but RSVP stored successfully,{error}");
     }
     return guest;
   }

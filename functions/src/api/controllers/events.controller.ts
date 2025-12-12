@@ -135,3 +135,64 @@ export const getEventStats = async (
     next(error);
   }
 };
+
+/**
+ * Get list of supported event types
+ */
+export const getEventTypes = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const types = EventsService.getEventTypes();
+    sendSuccess(res, types);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get event settings
+ */
+export const getEventSettings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const {eventId} = req.params;
+    const settings = await EventsService.getEventSettings(eventId);
+    sendSuccess(res, settings);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update event settings (requires authentication and ownership)
+ */
+export const updateEventSettings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    const {eventId} = req.params;
+
+    // Verify user owns the event
+    const event = await EventsService.getEventById(eventId);
+    if (event.hostId !== req.user.uid) {
+      throw new AppError("Unauthorized to update this event's settings", HTTP_STATUS.FORBIDDEN);
+    }
+
+    const updatedSettings = await EventsService.updateEventSettings(eventId, req.body);
+    sendSuccess(res, updatedSettings, "Event settings updated successfully");
+  } catch (error) {
+    next(error);
+  }
+};
