@@ -28,6 +28,11 @@ import wishlistRoutes from "./api/routes/wishlist.routes";
 import usersRoutes from "./api/routes/users.routes";
 import contactsRoutes from "./api/routes/contacts.routes";
 import guestWishlistRoutes from "./api/routes/guestWishlist.routes";
+import locationRoutes from "./api/routes/location.routes";
+import analyticsRoutes from "./api/routes/analytics.routes";
+import rsvpRoutes from "./api/routes/rsvp.routes";
+import mediaRoutes from "./api/routes/media.routes";
+import wishlistItemsRoutes from "./api/routes/wishlistItems.routes";
 
 // Import triggers
 import * as firestoreTriggers from "./triggers/firestore.triggers";
@@ -101,8 +106,13 @@ app.use("/api/users", usersRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/events", wishlistRoutes);
+app.use("/api/events", locationRoutes);
 app.use("/api", contactsRoutes);
 app.use("/api", guestWishlistRoutes);
+app.use("/api", rsvpRoutes);
+app.use("/api", mediaRoutes);
+app.use("/api/wishlist", wishlistItemsRoutes);
+app.use("/api/events", analyticsRoutes);
 
 // 404 handler (must be after all routes)
 app.use(notFoundHandler);

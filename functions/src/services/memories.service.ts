@@ -1,8 +1,8 @@
 import {FirestoreService} from "./database/firestore.service";
 import {StorageService} from "./storage/storage.service";
-import {COLLECTIONS} from "../config/constants";
+import {COLLECTIONS, HTTP_STATUS} from "../config/constants";
 import {logger} from "../utils/logger.util";
-import {createNotFoundError} from "../utils/error.util";
+import {createNotFoundError, AppError} from "../utils/error.util";
 import sharp from "sharp";
 import ffmpeg from "fluent-ffmpeg";
 import {v4 as uuidv4} from "uuid";
@@ -246,5 +246,32 @@ export class MemoriesService {
 
     await FirestoreService.deleteSubcollectionDocument(COLLECTIONS.EVENTS, eventId, COLLECTIONS.MEMORIES, memoryId);
     logger.info("Memory deleted", {eventId, memoryId});
+  }
+
+  static async deleteMediaByMediaId(mediaId: string, userId: string): Promise<void> {
+    // Get media document to find eventId and memoryId
+    const media = await this.getMediaById(mediaId);
+    if (!media) {
+      throw createNotFoundError("Media");
+    }
+
+    const {eventId, memoryId} = media;
+    if (!eventId || !memoryId) {
+      throw new Error("Media document missing eventId or memoryId");
+    }
+
+    // Get memory to verify ownership
+    const memory = await this.getMemory(eventId, memoryId);
+    if (memory.uploaderId !== userId) {
+      // Check if user is event host
+      const event = await FirestoreService.getDocument(COLLECTIONS.EVENTS, eventId);
+      if (event?.hostId !== userId) {
+        throw new AppError("Not authorized to delete this media", HTTP_STATUS.FORBIDDEN);
+      }
+    }
+
+    // Delete using existing deleteMemory method
+    await this.deleteMemory(eventId, memoryId);
+    logger.info("Media deleted by mediaId", {mediaId, eventId, memoryId});
   }
 }

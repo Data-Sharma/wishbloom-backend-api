@@ -39,6 +39,7 @@ export const config = {
   geminiApiKey: process.env.GEMINI_API_KEY || runtimeConfig.gemini?.api_key,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || runtimeConfig.stripe?.secret_key,
   sendgridApiKey: process.env.SENDGRID_API_KEY || runtimeConfig.sendgrid?.api_key,
+  googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || runtimeConfig.google?.maps_api_key,
   identityToolkitApiKey,
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY || runtimeConfig.stripe?.secret_key,
@@ -69,7 +70,7 @@ export const config = {
     aiEnabled: true,
     paymentsEnabled: true,
     emailEnabled: true,
-    analyticsEnabled: false,
+    analyticsEnabled: true,
   },
 
   // Limits

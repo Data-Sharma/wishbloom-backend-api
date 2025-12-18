@@ -94,3 +94,17 @@ export const downloadMedia = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+/* Delete media by mediaId */
+export const deleteMedia = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const {mediaId} = req.params;
+    if (!req.user) {
+      throw new AppError("User not authenticated", HTTP_STATUS.UNAUTHORIZED);
+    }
+    await MemoriesService.deleteMediaByMediaId(mediaId, req.user.uid);
+    sendNoContent(res);
+  } catch (error) {
+    next(error);
+  }
+};

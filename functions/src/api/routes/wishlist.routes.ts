@@ -20,7 +20,7 @@ router.post("/:eventId/wishlist", authenticate, validateParams(eventParamsSchema
 // Items (event-based add)
 router.post("/:eventId/wishlist/items", authenticate, validateParams(eventParamsSchema), validate(addItemSchema), wishlistController.addWishlistItem);
 
-// Item-level by itemId
+// Item-level by itemId (event-based paths)
 router.put("/items/:itemId", authenticate, validate(updateItemSchema), wishlistController.updateWishlistItem);
 router.delete("/items/:itemId", authenticate, wishlistController.deleteWishlistItem);
 
